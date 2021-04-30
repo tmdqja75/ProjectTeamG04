@@ -1,0 +1,1 @@
+/home/seungbeom/franka_ws/devel/.private/franka_core_msgs/lib/python2.7/dist-packages/franka_core_msgs/msg/__init__.py

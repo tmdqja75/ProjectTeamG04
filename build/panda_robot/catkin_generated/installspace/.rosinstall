@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/seungbeom/franka_ws/install/setup.sh

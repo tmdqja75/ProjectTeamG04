@@ -1,0 +1,6 @@
+devel_space: /home/seungbeom/franka_ws/devel
+install: false
+install_space: /home/seungbeom/franka_ws/install
+profile: default
+source_space: /home/seungbeom/franka_ws/src
+workspace: /home/seungbeom/franka_ws
