@@ -7,8 +7,11 @@ The impedance control code, which is located in src/Panda_impedance_with_graph.p
 You would need to install following dependency to use the simulation.
 Execute following command
 `sudo apt install ros-melodic-libfranka ros-melodic-franka-ros`
+
 `sudo apt install ros-melodic-gazebo-ros-control ros-melodic-rospy-message-converter ros-melodic-effort-controllers ros-melodic-joint-state-controller ros-melodic-moveit ros-melodic-moveit-commander ros-melodic-moveit-visual-tools`
+
 `pip install numpy`
+
 `pip install numpy-quaternion==2020.5.11.13.33.35`
 
 Here are the steps to set up the environment
