@@ -13,6 +13,8 @@ Execute following command
 
 `pip install numpy`
 
+`pip install scipy`
+
 `pip install numpy-quaternion==2020.5.11.13.33.35`
 
 Here are the steps to set up the environment
