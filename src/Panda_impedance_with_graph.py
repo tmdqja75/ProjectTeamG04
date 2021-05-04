@@ -8,68 +8,77 @@ from interactive_markers.interactive_marker_server import *
 from panda_robot import PandaArm
 
 '''
-Control Interface: The equilibrium is the initial configuration. After starting the controller 
-try to push the robot around and try different stiffness levels.
+Impedance Control:
+Initial State is the neutral position of the panda robot
 '''
 '''
 Parameters that can be controlled:
-K_pos, K_ori
-D_pos, D_ori
+K_p, K_o (Stiffness Coefficient [Position/Orientation])
+D_p, D_o (Damping Coefficient [Position/Orientation])
 
 1st demo
-K_pos, K_ori = 100, 100
-D_pos, D_ori = 5, 1
+K_p, K_o = 100, 100
+D_p, D_o = 5, 1
 2nd demo
-K_pos, K_ori = 500, 100
-D_pos, D_ori = 5, 1
+K_p, K_o = 500, 100
+D_p, D_o = 5, 1
 3rd demo
-K_pos, K_ori = 100, 100
-D_pos, D_ori = 20, 1
+K_p, K_o = 100, 100
+D_p, D_o = 20, 1
 4th demo
-K_pos, K_ori = 500, 100
-D_pos, D_ori = 20, 1
+K_p, K_o = 500, 100
+D_p, D_o = 20, 1
 '''
 # define compliance parameters: translational_stiffness and rotational_stiffness
-K_pos, K_ori = 500, 100
-D_pos, D_ori = 20, 1
+K_p, K_o = 500, 100
+D_p, D_o = 20, 1
 
 # Get the initial position of the robot when the code is first runned
 def set_equilibrium(robot):
     end_effector_config = robot.endpoint_pose()
     initial_pos, initial_ori = end_effector_config['position'],end_effector_config['orientation']
     return initial_pos, initial_ori
-
-def cal_difference(curr_ori, init_ori):
-    curr_mat = quaternion.as_rotation_matrix(curr_ori)
-    init_mat = quaternion.as_rotation_matrix(init_ori)
-    rel_mat = init_mat.T.dot(curr_mat)
-    rel_quat = quaternion.from_rotation_matrix(rel_mat)
-    vec = quaternion.as_float_array(rel_quat)[1:]
-    if rel_quat.w < 0.0:
-        vec = -vec       
-    return -init_mat.dot(vec)
     
 
 def impedance_control(rate):
+    # Variable for reaction force data
     global F_TOT
     while not rospy.is_shutdown():
-        # error = 100
-        # while error > 0.005:
-        curr_pos, curr_ori = panda.ee_pose()
-        curr_vel, curr_omg = panda.ee_velocity()
-        curr_vel = curr_vel.reshape([3,1])
-        curr_omg = curr_omg.reshape([3,1])
-        delta_pos = (init_pos - curr_pos).reshape([3,1])
-        delta_ori = cal_difference(curr_ori, init_ori).reshape([3,1])
+        # Get deviated state off the robot (position and orientation)
+        p, q = panda.ee_pose()         # Current position and orientation
+        v, omega = panda.ee_velocity() # Current velocity and angular velocity
+        
+        # Reshape vector for calculation
+        v = v.reshape([3,1])
+        omega = omega.reshape([3,1])
+        
+        # Calculate difference between initial pose and current pose (position)
+        dp = (p_i - p).reshape([3,1])
+        
+        # Calcualte difference between initial pose and current pose (orientation)
+        # Convert quaternion into rotation matrix
+        mat_c = quaternion.as_rotation_matrix(q) # current orientation
+        mat_i = quaternion.as_rotation_matrix(q_i) # initial orientation
+        mat_diff = mat_i.T.dot(mat_c)
+        quat_diff = quaternion.from_rotation_matrix(mat_diff)
+        vector_q = quaternion.as_float_array(quat_diff)[1:]
+        if quat_diff.w < 0:
+            vector_q = -vector_q
+
+        dq = -mat_i.dot(vector_q).reshape([3,1])
+        
+        # compute reaction force
+        stiff_diff = np.vstack([K_p*(dp), K_o*(dq)])
+        damp_diff = np.vstack([D_p*(v), D_o*(omega)])
+        F = stiff_diff - damp_diff
+        
+        # Store reaction force data to F_TOT
+        F_cartesian = F[:3].reshape([1,3])
         t = rospy.get_time()
+        F_cartesian = np.insert(F_cartesian, 0, t)
+        F_TOT = np.vstack((F_TOT, F_cartesian))
         
-        # compute control
-        F = np.vstack([K_pos*(delta_pos), K_ori*(delta_ori)]) - np.vstack([D_pos*(curr_vel), D_ori*(curr_omg)])
-        F_cart = F[:3].reshape([1,3])
-        F_cart = np.insert(F_cart, 0, t)
-        F_TOT = np.vstack((F_TOT, F_cart))
-        
-        error = np.linalg.norm(delta_pos) + np.linalg.norm(delta_ori)
+        # From reaction force to Joint Torque
         J = panda.zero_jacobian()
         trq = np.dot(J.T,F)
         
@@ -77,7 +86,9 @@ def impedance_control(rate):
         panda.exec_torque_cmd(trq)
         rate.sleep()
 
+# Store reaction force for plotting when the code is terminated
 F_TOT = np.array([0,0,0,0])
+
 def _on_shutdown():
     # Plot the reaction Force of the end effector during impedance experiment
     print('Shutdown')
@@ -89,13 +100,13 @@ def _on_shutdown():
     plt.plot(t,F_TOT[:,2], label = '$F_y$')
     plt.plot(t,F_TOT[:,3], label = '$F_z$')
     plt.legend()
-    plt.title('Reaction Force Plot with $K={}$ and $D = {}$'.format(K_pos,D_pos))
+    plt.title('Reaction Force Plot with $K={}$ and $D = {}$'.format(K_p,D_p))
     plt.xlabel('Time (s)')
     plt.ylabel('Force (N)')
-    plt.savefig('K{}D{}'.format(K_pos,D_pos))
+    plt.savefig('K{}D{}'.format(K_p,D_p))
     plt.show()
     print('Exporting csv')
-    np.savetxt("Cartesion_Reactive_Force_K{}D{}.csv".format(K_pos, D_pos), F_TOT, delimiter=",")
+    np.savetxt("Cartesion_Reactive_Force_K{}D{}.csv".format(K_p, D_p), F_TOT, delimiter=",")
     print('Export Done')
     
 
@@ -103,9 +114,12 @@ if __name__ == "__main__":
     rospy.init_node('panda_imped_control')
 
     panda = PandaArm()
+    
+    #Move Panda to neutral position
     panda.move_to_neutral()
     
-    init_pos, init_ori = set_equilibrium(panda)
+    # Get initial state of the robot
+    p_i, q_i = set_equilibrium(panda)
     rospy.on_shutdown(_on_shutdown)
     publish_rate = 100
     rate = rospy.Rate(publish_rate)
