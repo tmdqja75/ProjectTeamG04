@@ -1,4 +1,4 @@
-# ProjectTeamG04
+# ProjectTeamG04 (only works with real franka panda robot)
 Using the package developed by [Saif Sidhik](https://github.com/justagist), the team made a demo on impedance control on panda robot.
 This repository is the environment to simulate the impedance control on Franka robot using Gazebo
 You would need to run the simulation on Ubuntu 18.04 and ROS Melodic
