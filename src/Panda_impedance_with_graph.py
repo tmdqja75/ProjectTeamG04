@@ -1,5 +1,4 @@
 import rospy
-# import threading
 import quaternion
 import numpy as np
 import matplotlib.pyplot as plt
