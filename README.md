@@ -9,10 +9,13 @@ Here are the steps to set up the environment
 2. Head to desired empty directory
 3. git clone the repository to desired directory
 4. cd into the cloned repository
-5. Execute source devel/setup.bash
-6. Execute roslaunch panda_gazebo panda_world.launch. This would open up gazebo with panda robot.
+5. Execute `source devel/setup.bash`
+6. Execute `roslaunch panda_gazebo panda_world.launch`. This would open up gazebo with panda robot.
 7. Open new terminal window
 8. Head to same directory that the repository is cloned in
-9. Execute source devel/setup.bash
-10. head to 'src' directory
-11. Type in python sour
+9. Execute `source devel/setup.bash`
+10. head to `src` directory (`cd src`)
+11. Type in `python Panda_impedance_with_graph.py` to start impedance control
+
+This would set up the environment for impedance control on simulated panda robot.
+You can select any joints of the panda robot, right click, and select Apply Force/Torque to apply force/torque and see how robot reacts to external forces
