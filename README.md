@@ -34,3 +34,5 @@ Here are the steps to set up the environment
 
 This would set up the environment for impedance control on simulated panda robot.
 You can select any joints of the panda robot, right click, and select Apply Force/Torque to apply force/torque and see how robot reacts to external forces
+
+When the `Panda_impedance_with_graph.py` program is terminated using <kbd>ctrl</kbd> + <kbd>c</kbd>, the graph representing reaction force on the end effector will be generated.
