@@ -1,6 +1,6 @@
 # ProjectTeamG04
 
-**!! Some of the directory in this repository is currently not working. Please follow the direction in `Franka Simulation steps.pdf` file to run franka simulation in your computer. !! **
+**!! Some of the directory in this repository is currently not working. Please follow the direction in `Franka Simulation steps.pdf` file to run franka simulation in your computer. !!**
 
 Using the package developed by [Saif Sidhik](https://github.com/justagist), the team made a demo on impedance control on panda robot.
 This repository is the environment to simulate the impedance control on Franka robot using Gazebo
